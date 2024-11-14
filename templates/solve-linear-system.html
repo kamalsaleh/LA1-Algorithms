@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h1>Solving linear systems \(X\cdot A= B\)</h1>
+  <p class="text-muted small mb-0 ms-3">
+    Note that \(A\) and \(B\) must have the same number of columns.
+  </p>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    
+    <div class="container mt-4">
+      <div class="card shadow-sm p-4">
+          <div class="form-group mb-3" style="display: flex; align-items: center;">
+            {{ form.A.label(class="form-label") }}
+            {{ form.A(id="form_A", class="form-control", value=form.A.data) }}
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <label class="form-label" for="identity-matrix-rank-A">Identity-Mat:</label>
+              <input type="number" id="identity-matrix-rank-A" value="0" min="0" onchange="identityMatrix('A')">
+            </div>
+            <div class="d-flex">
+            &nbsp;
+            <button type="button" class="btn btn-secondary small-button" onclick="transposeMContent('A')">Transpose</button>
+            </div>
+          </div>
+          <br>
+          <br>
+          <p class="text-muted small mb-0 ms-3">
+            e.g., [[2, 5], [4, 5], [-3, 4]] or 2 5; 4 5; -3 4;<br>
+            e.g., [[2*x^3-3, x^2],[-x, 3*x+1]] or 2*x^3-3 x^2; -x 3*x+1; (no spaces within the polynomials)
+          </p>
+      </div>
+    </div>
+    <br>
+    <div class="container mt-4">
+      <div class="card shadow-sm p-4">
+          <div class="form-group mb-3" style="display: flex; align-items: center;">
+            {{ form.B.label(class="form-label") }}
+            {{ form.B(id="form_B", class="form-control", value=form.B.data) }}
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+            <label class="form-label" for="identity-matrix-rank-B">Identity-Mat:</label>
+            <input type="number" id="identity-matrix-rank-B" value="0" min="0" onchange="identityMatrix('B')">
+            </div>
+            <div class="d-flex">
+            &nbsp;
+            <button type="button" class="btn btn-secondary small-button" onclick="transposeMContent('B')">Transpose</button>
+            </div>
+          </div>
+      </div>
+    </div>
+    <br>
+    
+    <div class="container mt-4">
+      <div class="card shadow-sm p-4">
+        <h5 class="card-title mb-4">Specify Ring:</h5>
+          <!-- RING and DOMAIN -->
+          <div style="display: flex; align-items: center;">
+              {{ form.RING.label }}
+              <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                {{ form.RING(class="form-control", id="specify-ring", onchange="toggleChar()") }}
+              </div>
+          </div>
+          
+          <div style="display: flex; align-items: center;" id="field-of-polynomial-ring">
+              <br>
+              {{ form.DOMAIN.label }}
+              <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                {{ form.DOMAIN(class="form-control", id="specify-domain", onchange="toggleChar()") }}
+              </div>
+          </div>
+          
+          <!-- Characteristic -->
+           <div class="form-group" id="specify-field-characteristic">
+            <br>
+            <div class="display: flex; align-items: center;">
+              {{ form.CHAR.label }}
+              {{ form.CHAR(id="char-input", min=2, onchange="nextPrime()") }}
+            </div>
+          </div>
+          
+          <!-- Submit Button -->
+          <div class="text-start">
+            <br>
+            {{ form.submit(class="btn btn-primary") }}
+          </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<div class="container">
+  {% if output %}
+    
+  <div class="container mt-4">
+    <div class="card shadow-sm p-4">
+      <h5 class="card-title mb-4">Solution Set:</h5>
+      \[
+        \mathcal{L}_{ {{ ring_latex }} }^{A,B} =
+        {% if is_solvable %}
+          
+          \{ {{ X_p_latex }} {% if nr_syzygies != 0 %} + {{ parametrized_solution_latex }} {% endif %} \}
+          \subseteq {{ ring_latex }}^{ {{ nr_systems }} \times {{ nr_variables }} }
+          
+        {% else %}
+          
+          \emptyset
+          
+        {% endif %}
+      \]
+      <div class="text-start">
+        <button id="toggle-button" class="btn btn-secondary small-button" onclick="toggleComputation()">Show Computation</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mt-4" id="computation-details" style="display: none;">
+    <div class="card shadow-sm p-4">
+      <h5 class="card-title mb-4">Computation Details:</h5>
+      
+      <p>
+        The passed matrices correspond to the following system of linear equations over \( {{ ring_latex }} \):
+      </p>
+      
+      \[ {{ system_latex }} \]
+      
+      <ul>
+        <li>
+          The system can be expressed as \( X \cdot A = B \) where 
+          <ul>
+            <li> \( X = {{ x_latex }} \) </li>
+            <li> \( A = {{ A_latex }} \) </li>
+            <li> \( B = {{ B_latex }} \) </li>
+          </ul>
+        </li>
+        
+        <li> Define \( \begin{bmatrix} A & I \end{bmatrix} = {{ M_latex }} \)</li>
+        
+        <li>
+          We perform \(\mathbf{REF}\) algorithm on the first block of \(\begin{bmatrix} A & I \end{bmatrix}\):<br><br>
+         \( \mathbf{REF}(A | I) = {{ REF_M_latex }} \)
+        </li>
+        
+        <li> We obtain the following matrices:
+          <ul>
+            <li> \( G := G_{\mathbf{REF}}^{ {{ring_latex}} }(A) = {{ G_latex }} \in {{ ring_latex }}^{ {{ rank_A }} \times {{ nr_equations }} } \) </li>
+            <li> \( Z := Z_{\mathbf{REF}}^{ {{ring_latex}} }(A) = {{ Z_latex }} \in {{ ring_latex }}^{ {{ rank_A }} \times {{ nr_variables }} } \) (The \(\mathbf{REF}\)-B&eacute;zout matrix of \(A\))</li>
+            <li> \( S := S_{\mathbf{REF}}^{ {{ring_latex}} }(A) = {{ S_latex }} \in {{ ring_latex }}^{ {{ nr_syzygies }} \times {{ nr_variables }} } \) (The \(\mathbf{REF}\)-syzygy matrix  of \(A\) {% if nr_syzygies == 0 %} is empty {% endif %})</li>
+          </ul>
+        </li>
+        
+        <li> The solution set to the homogeneous system \(X\cdot A=0\) is given by
+          \[
+            \mathcal{L}_{ {{ ring_latex }} }^{A,0}
+            =
+            \{ T \cdot S~|~T\in {{ ring_latex }} ^ { {{ nr_systems }} \times {{ nr_syzygies }}} \}
+            =
+            \{ {% if nr_syzygies != 0 %} {{ parametrized_solution_latex }} {% else %} {{ zero_solution_latex }} {% endif %} \}.
+          \]
+        </li>
+        
+        <li>
+          The solution set \(\mathcal{L}_{ {{ ring_latex }} }^{A,B}\) to the system \(X \cdot A= B\) is given by \(X_p + \mathcal{L}_{ {{ ring_latex }} }^{A,0}\) where \(X_p\) is a particular solution to \(X\cdot A= B\).
+        </li>
+        
+        <li>
+         To find a particular solution \(X_p\) we use the leading coefficients in \(G\) to reduce the first {{ nr_systems }} row(s) of the matrix <br>
+          \( H := \begin{bmatrix} -B & 0 \\  G & Z \end{bmatrix} = {{ H_latex }}. \) <br>
+          \( \leadsto \mathbf{sRED}(H) = {{ SREF_H_latex }} =: \begin{bmatrix} -\mathcal{O} & X_p \\  G & Z \end{bmatrix}\)
+        </li>
+        
+        <li>
+          We obtain the following matrices:
+          <ul>
+            <li> \( \mathcal{O} = {{ O_latex }} \in {{ ring_latex }}^{ {{ nr_systems }} \times {{ nr_equations }} } \) (The obstruction matrix of the pair \((B, G)\)) </li>
+            <li> \( X_p = {{ X_p_latex }} \in {{ ring_latex }}^{ {{ nr_systems }} \times {{ nr_variables }} } \) </li>
+          </ul>
+        </li>
+        
+        {% if is_solvable == True %}
+        
+        <li>
+          Since \( \mathcal{O} \) is a zero matrix, the system is solvable over \({{ ring_latex }}\) and \( X_p := {{ X_p_latex }} \) is a particular solution to the system.
+        </li>
+        
+        <li>
+          The solution set is \( \mathcal{L}^{A,B}_{ {{ring_latex}} } = X_p + \mathcal{L}^{A,0}_{ {{ring_latex}} }\).
+          That is, the system has
+            {% if nr_syzygies != 0 %}
+                {% if finite_ring %} exactly \({{ ring.mod }}^{{ nr_syzygies }}\) solutions {% else %} infinitely many solutions {% endif %}
+            {% else %}
+              a unique solution \(X_p\)
+            {% endif %}
+          over \({{ ring_latex }}\).
+        </li>
+        
+        {% else %}
+        
+        <li>
+          Since \( \mathcal{O} \) is not a zero matrix, the system is not solvable over \({{ ring_latex }}\).
+        </li>
+        
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
+<br>
+<br>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+      <h1>Row Echelon Form(s)</h1>
+      <br>
+      <form method="POST">
+          {{ form.hidden_tag() }}
+          
+          <div class="container mt-4">
+            <div class="card shadow-sm p-4">
+              <h5 class="card-title mb-4">Matrix Input:</h5>
+                <div class="form-group mb-3" style="display: flex; align-items: center;">
+                  <label for="matrix-input" class="form-label me-2">{{ form.M.label() }}</label>
+                  {{ form.M(class="form-control", id="matrix-input", value=form.M.data) }}
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <label for="identity-matrix-rank-M" class="form-label me-2">Identity-Mat:</label>
+                    <input type="number" id="identity-matrix-rank-M" value="0" min="0" onchange="identityMatrix('M')">
+                  </div>
+                  <div>
+                    &nbsp;
+                    <button type="button" class="btn btn-secondary small-button" onclick="transposeMContent('M')">Transpose</button>
+                  </div>
+                </div>
+                <p class="text-muted small mb-0 ms-3">
+                  e.g., [[2, 5], [4, 5], [-3, 4]] or 2 5; 4 5; -3 4;<br>
+                  or [[2*x^3-3, x^2],[-x, 3*x+1]] or 2*x^3-3 x^2; -x 3*x+1; (no spaces within the polynomials)
+                </p>
+            </div>
+          </div>
+          <br>
+          
+          <div class="container mt-4">
+            <div class="card shadow-sm p-4">
+              <h5 class="card-title mb-4">Algorithm Configuration:</h5>
+                <!-- RING and DOMAIN -->
+                <div style="display: flex; align-items: center;">
+                  {{ form.RING.label }}
+                  <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                    {{ form.RING(class="form-control", id="specify-ring", onchange="toggleChar()") }}
+                  </div>
+                </div>
+                
+                <div style="display: flex; align-items: center;" id="field-of-polynomial-ring">
+                  <br>
+                  {{ form.DOMAIN.label }}
+                  <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                    {{ form.DOMAIN(class="form-control", id="specify-domain", onchange="toggleChar()") }}
+                  </div>
+                </div>
+                
+                <!-- Characteristic -->
+                <div class="form-group" id="specify-field-characteristic">
+                  <br>
+                  <div class="display: flex; align-items: center;">
+                    {{ form.CHAR.label }}
+                    {{ form.CHAR(id="char-input", min=2, onchange="nextPrime()") }}
+                  </div>
+                </div>
+                
+                <!-- Leading Coefficient Position -->
+                <div class="form-group">
+                  <br>
+                  <div style="display: flex; align-items: center;">
+                    {{ form.LEADING_COEFFICIENT_POSITION.label }}
+                    {{ form.LEADING_COEFFICIENT_POSITION(id="leading-coefficient") }}
+                  </div>
+                </div>
+                <br>
+                
+                <!-- Active Columns -->
+                <div class="form-group">
+                  <br>
+                  <div style="display: flex; align-items: center;">
+                    {{ form.ACTIVE_COLUMNS.label }}
+                    {{ form.ACTIVE_COLUMNS(id="active-columns", min=-1) }}
+                  </div>
+                  <p class="small text-muted mt-1">
+                    Default value is \(-1\) means the algorithm will be applied to all columns.
+                  </p>
+                </div>
+                <br>
+                
+                <!-- Art of Reduction -->
+                <div style="display: flex; align-items: center;">
+                  <br>
+                  {{ form.ART_OF_REDUCTION.label }}
+                  <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                    {{ form.ART_OF_REDUCTION(class="form-control", id="art-of-reduction", onchange="toggleReduceRows()") }}
+                  </div>
+                </div>
+                <br>
+                
+                <!-- Reduce the First N Rows -->
+                <div class="form-group" id="reduce-the-first-n-rows">
+                  <br>
+                  <div style="display: flex; align-items: center;">
+                    {{ form.REDUCE_THE_FIRST_N_ROWS.label }}
+                    {{ form.REDUCE_THE_FIRST_N_ROWS(min=-1) }}
+                  </div>
+                  <p class="small text-muted">
+                    The default value is \(-1\) means each leading coefficient will be used to reduce elements in all rows above it.
+                  </p>
+                </div>
+                <br>
+                
+                <!-- Submit Button -->
+                <div class="text-start">
+                  {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+          </div>
+          
+      </form>
+      <br>
+    </div>
+  
+    <div class="container">
+      {% if output %}
+        
+        <div class="container mt-4">
+          <div class="card shadow-sm p-4">
+            <h5 class="card-title mb-4">Output:</h5>
+              
+            <p style='text-align: center;'>
+              \( \mathbf{ {{ post_reduction }} }(M) = {{ output[0] | safe }} \in {{ ring_latex }}^{ {{ nr_rows_M }} \times {{ nr_cols_M }} } \)
+            </p>
+            
+            <ul>
+              <li> \(\mathbf{Rank}(M) = {{ rank_M }}\)</li>
+              {% if rank_M == nr_rows_M %}
+                <li>
+                  \(M\) is left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrRows}(M)\).
+                </li>
+                {% if is_field %}
+                <li>
+                  \(M\) is right-invertible because it is left-regular and the underlying ring is a field.
+                </li>
+                {% endif %}
+              {% else %}
+                <li>
+                  \(M\) is not left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrRows}(M)\).
+                </li>
+                <li>
+                  \(M\) can't be right-invertible because it is not left-regular.
+                </li>
+              {% endif %}
+              
+              {% if rank_M == nr_cols_M %}
+                <li>
+                  \(M\) is right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrCols}(M)\).
+                </li>
+                
+                {% if is_field %}
+                <li>
+                  \(M\) is left-invertible because it is right-regular and the underlying ring is a field.
+                </li>
+                {% endif %}
+                
+              {% else %}
+                <li>
+                  \(M\) is not right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrCols}(M)\).
+                </li>
+                <li>
+                  \(M\) can't be left-invertible because it is not right-regular.
+                </li>
+              {% endif %}
+              
+              {% if is_field == False and left_invertible != 'unknown' %}
+                {% if left_invertible == True %}
+                  <li>
+                    \(M\) is left-invertible because the upper nonzero-part of \( \mathbf{ {{ post_reduction }} }(M) \) equals \(I_{ {{ nr_cols_M }} }\) .
+                  </li>
+                  {% if nr_rows_M == nr_cols_M %}
+                    <li>
+                      \(M\) is right-invertible because \(M\) is quadratic and left-invertible.
+                    </li>
+                  {% endif %}
+                {% else %}
+                  <li>
+                    \(M\) is not left-invertible because the upper nonzero-part of \( \mathbf{ {{ post_reduction }} }(M) \) doesn't equal \(I_{ {{ nr_cols_M }} }\) .
+                  </li>
+                  {% if nr_rows_M == nr_cols_M %}
+                    <li>
+                      \(M\) is not right-invertible because \(M\) is quadratic and not left-invertible.
+                    </li>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+              
+            </ul>
+            
+            <div>
+              <button class="btn btn-secondary small-button" onclick="copyToClipboard('{{ output_as_text }}')">Copy to Clipboard</button>
+              <button id="toggle-button" class="btn btn-secondary small-button" onclick="toggleComputation()">Show Computation</button>
+            </div>
+            
+          </div>
+        </div>
+          
+        <div class="container mt-4" id="computation-details" style="display: none;">
+          <div class="card shadow-sm p-4">
+            <h5 class="card-title mb-4">Computation Details:</h5>
+            {{ output[1] | safe }}
+          </div>
+        </div>
+        
+        
+      {% endif %}
+      
+      <br>
+      <br>
+    </div>
+    
+{% endblock %}

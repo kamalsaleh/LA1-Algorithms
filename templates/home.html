@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="text-left">Linear Algebra Algorithms</h1>
+    
+  <div class="form-group">
+    <label for="optionsSelect" style="font-size: 1.5rem;">Select an option:</label>
+    <select id="optionsSelect" class="form-control" onchange="location = this.value;">
+        <option value="{{ url_for('home') }}"></option>
+        <option value="{{ url_for('row_echelon_form') }}">Row Echelon Form(s)</option>
+        <option value="{{ url_for('solve_linear_system') }}">Solve Linear System</option>
+        <option value="{{ url_for('create_linear_system') }}">Create Linear System</option>
+    </select>
+  </div>
+</div>
+{% endblock %}

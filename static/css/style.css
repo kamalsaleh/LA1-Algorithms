@@ -1,0 +1,29 @@
+h1 {
+    color: darkblue;
+    font-size: 60px;
+}
+
+body {
+    background: #f4f4f4;
+}
+
+#demo{
+    color: red;
+    font-size: 22px;
+}
+
+/* Smaller button styling */
+.small-button {
+  font-size: 12px; /* Adjust text size */
+  padding: 5px 10px; /* Adjust padding */
+  border-radius: 4px; /* Optional rounded corners */
+}
+
+textarea {
+  width: 100%; /* Adjust to container width */
+  height: 100px; /* Adjust to container height */
+  overflow: auto; /* Ensure scrollbars are always visible */
+  resize: vertical; /* Allow only vertical resizing */
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
