@@ -108,10 +108,25 @@ function generateIdentityMatrix(rank) {
   return M;
 }
 
-function identityMatrix(name) {
-  var rank = document.getElementById("identity-matrix-rank-" + name).value;
-
-  M = generateIdentityMatrix(rank);
+function stackIdentityMatrix(name) {
+  var rank = parseInt(document.getElementById("identity-matrix-rank-" + name).value);
+  
+  ID = parseMatrixEntriesFromString(generateIdentityMatrix(rank));
+  M = document.querySelector('[name="' + name + '"]').value
+  
+  if (M.length > 0) {
+    M = parseMatrixEntriesFromString(M);
+    if (M.length === rank) {
+      for(var i = 0; i < rank; i++) {
+       M[i] = M[i].concat(ID[i]);
+      }
+    }
+  } else {
+      M = ID;
+  }
+  
+  M = M.map(row => row.join(" ")).join(";\n");
+  
   document.querySelector('[name="' + name + '"]').value = M;
 }
 
