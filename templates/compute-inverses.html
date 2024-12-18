@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+      <h1>Left and Right Inverses</h1>
+      <br>
+      <form method="POST">
+          {{ form.hidden_tag() }}
+          
+          <div class="container mt-4">
+            <div class="card shadow-sm p-4">
+              <h5 class="card-title mb-4">Matrix Input:</h5>
+                <div class="form-group mb-3" style="display: flex; align-items: center;">
+                  <label for="matrix-input" class="form-label me-2">{{ form.M.label() }}</label>
+                  {{ form.M(class="form-control", id="matrix-input", value=form.M.data) }}
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <label for="identity-matrix-rank-M" class="form-label me-2">Identity-Mat:</label>
+                    <input type="number" id="identity-matrix-rank-M" value="0" min="0" onchange="identityMatrix('M')">
+                  </div>
+                  <div>
+                    &nbsp;
+                    <button type="button" class="btn btn-secondary small-button" onclick="transposeMContent('M')">Transpose</button>
+                  </div>
+                </div>
+                <p class="text-muted small mb-0 ms-3">
+                  e.g., [[2, 5], [4, 5], [-3, 4]] or 2 5; 4 5; -3 4;<br>
+                  or [[2*x^3-3, x^2],[-x, 3*x+1]] or 2*x^3-3 x^2; -x 3*x+1; (no spaces within the polynomials)
+                </p>
+            </div>
+          </div>
+          <br>
+          
+          <div class="container mt-4">
+            <div class="card shadow-sm p-4">
+              <h5 class="card-title mb-4">Specify Ring:</h5>
+                <!-- RING and DOMAIN -->
+                <div style="display: flex; align-items: center;">
+                  {{ form.RING.label }}
+                  <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                    {{ form.RING(class="form-control", id="specify-ring", onchange="toggleChar()") }}
+                  </div>
+                </div>
+                
+                <div style="display: flex; align-items: center;" id="field-of-polynomial-ring">
+                  <br>
+                  {{ form.DOMAIN.label }}
+                  <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                    {{ form.DOMAIN(class="form-control", id="specify-domain", onchange="toggleChar()") }}
+                  </div>
+                </div>
+                
+                <!-- Characteristic -->
+                <div class="form-group" id="specify-field-characteristic">
+                  <br>
+                  <div class="display: flex; align-items: center;">
+                    {{ form.CHAR.label }}
+                    {{ form.CHAR(id="char-input", min=2, onchange="nextPrime()") }}
+                  </div>
+                </div>
+                
+                
+                <!-- Submit Button -->
+                <div class="text-start">
+                  {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+          </div>
+          
+      </form>
+      <br>
+    </div>
+    
+    {% if output %}
+      <div class="container">
+        
+        <div class="container mt-4">
+          <div class="card shadow-sm p-4">
+            <h5 class="card-title mb-4">Set of Left-Inverse(s):</h5>
+            \[ {{ l_invs | safe }} \]
+          </div>
+        </div>
+        
+        <div class="container mt-4">
+          <div class="card shadow-sm p-4">
+            <h5 class="card-title mb-4">Set of Right-Inverse(s):</h5>
+            \[ {{ r_invs | safe }} \]
+          </div>
+        </div>
+        <br>
+        <br>
+      </div>
+    {% endif %}
+    
+{% endblock %}

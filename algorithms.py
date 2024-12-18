@@ -376,3 +376,183 @@ def echelon_form_matrix(M, ring,
       html += "<hr>" + html_
       
     return M, html
+
+def zero_matrix(m, n, ring, dtype):
+    
+    if ring in [ZZ, QQ]:
+      zero = 0
+    elif isinstance(ring, GF):
+      zero = ring(0)
+    elif isinstance(ring, PolyRing):
+      zero = Poly("0", x, domain=ring.domain)
+    
+    return numpy.full((m, n), zero, dtype=dtype)
+
+def eye_matrix(n, ring, dtype):
+    
+    if ring in [ZZ, QQ]:
+      one = 1
+    elif isinstance(ring, GF):
+      one = ring(1)
+    elif isinstance(ring, PolyRing):
+      one = Poly("1", x, domain=ring.domain)
+    
+    mat = zero_matrix(n, n, ring, dtype)
+    
+    for i in range(n):
+      mat[i,i] = one
+    
+    return mat
+
+def solve_left_linear_system(A, B, ring):
+    
+    nr_variables = A.shape[0]
+    nr_equations = A.shape[1]
+    nr_systems = B.shape[0]
+    
+    variables = [f"X_{ {i+1} }" for i in range(nr_variables)]
+    
+    if nr_systems == 1 and ring in ["Integers", "Rationals"]:
+      x_latex = "\\begin{bmatrix}" + " & ".join(variables) + "\\end{bmatrix}"
+      system_latex = "\\begin{array}{r}" + "\\\\".join([a+b for a, b in zip([" & ".join([f"{'+' if val>=0 else '-'} {abs(val)}{var}" for val, var in zip(A[:,i], variables)]) for i in range(nr_equations)], [f"& = & {val}" for val in B[0,:]])]) + "\\end{array}"
+    elif nr_systems == 1 and ring not in ["Integers", "Rationals"]:
+      x_latex = "\\begin{bmatrix}" + " & ".join(variables) + "\\end{bmatrix}"
+      system_latex = "\\begin{array}{r}" + "\\\\".join([a+b for a, b in zip([" & ".join([f"+ ({laTeX(val)}){var}" for val, var in zip(A[:,i], variables)]) for i in range(nr_equations)], [f"& = & ({laTeX(val)})" for val in B[0,:]])]) + "\\end{array}"
+    else:
+      x_latex = "\\begin{bmatrix}" + "\\\\".join([" & ".join(["X_{" +f"{j+1},{i+1}" + "}" for i in range(nr_variables)]) for j in range(nr_systems)]) + "\\end{bmatrix}"
+      system_latex = "X \cdot A = B"
+    
+    if ring in [ZZ, QQ]:
+      finite_ring = False
+      ring_latex = " \mathbb{Z}" if ring == ZZ else " \mathbb{Q}"
+    elif isinstance(ring, GF):
+      finite_ring = True
+      ring_latex = f"\\mathbb{{F}}_{{ {ring.mod} }}"
+    elif isinstance(ring, PolyRing):
+      finite_ring = False
+      if ring.domain == QQ:
+        ring_latex = " \mathbb{Q}[x]"
+      elif isinstance(ring.domain, GF):
+        ring_latex = f"\\mathbb{{F}}_{{ {ring.domain.mod} }}[x]"
+    
+    id_mat = eye_matrix(nr_variables, ring, A.dtype)
+    
+    M = numpy.hstack([A, id_mat])
+    
+    REF_M = echelon_form_matrix(M,
+                  leading_coefficient=(0, 0),
+                  post_reduction="REF",
+                  active_columns=nr_equations,
+                  ring=ring
+              )[0]
+    
+    A_tilde = REF_M[:, :nr_equations]
+    I_tilde = REF_M[:, nr_equations:]
+    
+    rank_A = len([i for i in range(nr_variables) if numpy.any(A_tilde[i,:] != 0)])
+    
+    G = A_tilde[:rank_A, :]
+    Z = I_tilde[:rank_A, :]
+    S = I_tilde[rank_A:, :]
+    
+    nr_syzygies = nr_variables - rank_A
+    S_latex = laTeX(S)
+    
+    if nr_systems == 1:
+      parametrized_solution_latex = "\\begin{bmatrix}" + " & ".join([f"t_{ {i+1} }" for i in range(nr_syzygies)]) + "\\end{bmatrix} \cdot" + S_latex + "|" + ",".join([f"t_{ {i+1} }" for i in range(nr_syzygies)]) + "\in" + ring_latex
+    else:
+      parametrized_solution_latex = "\\begin{bmatrix}" + "\\\\".join([" & ".join(["t_{" +f"{j+1},{i+1}" + "}" for i in range(nr_syzygies)]) for j in range(nr_systems)]) + "\\end{bmatrix} \cdot" + S_latex + "| t_{i,j} \in" + ring_latex + "\mbox{ for }" + f"i \leq {nr_systems}, j \leq {nr_syzygies}"
+    
+    zero_mat = zero_matrix(nr_systems, nr_variables, ring, A.dtype)
+    
+    H = numpy.block([[-B, zero_mat], [G, Z]])
+    
+    SREF_H = echelon_form_matrix(H,
+                leading_coefficient=(nr_systems, 0),
+                post_reduction="SREF",
+                reduction_index=nr_systems,
+                active_columns=nr_equations,
+                ring=ring
+              )[0]
+    
+    O = -SREF_H[:nr_systems, :nr_equations]
+    X_p = SREF_H[:nr_systems, nr_equations:]
+    
+    is_solvable = numpy.all(O == 0)
+    
+    if is_solvable:
+      if nr_syzygies == 0:
+        solution_set_latex = "\\{" + laTeX(X_p) + "\\}"
+      else:
+        solution_set_latex = "\\{" + laTeX(X_p) + " + " + parametrized_solution_latex + "\\}"
+    else:
+      solution_set_latex = "\\emptyset"
+    
+    solution_set_latex = solution_set_latex + "\\subseteq" + ring_latex + "^{" + str(nr_systems) + "\\times" + str(nr_variables) + "}"
+    
+    return X_p, S, dict(ring=ring,
+        finite_ring=finite_ring,
+        ring_latex=ring_latex,
+        system_latex=system_latex,
+        A_latex=laTeX(A),
+        B_latex=laTeX(B),
+        x_latex=x_latex,
+        M_latex=laTeX(M, active_columns=nr_equations),
+        REF_M_latex=laTeX(REF_M, active_columns=nr_equations),
+        rank_A=rank_A,
+        G_latex=laTeX(G),
+        Z_latex=laTeX(Z),
+        S_latex=laTeX(S),
+        nr_syzygies=nr_syzygies,
+        nr_variables=nr_variables,
+        nr_equations=nr_equations,
+        nr_systems=nr_systems,
+        parametrized_solution_latex=parametrized_solution_latex,
+        zero_solution_latex=laTeX(numpy.zeros((nr_systems, nr_variables), dtype=A.dtype)),
+        H_latex=laTeX(H, leading_coefficient=(nr_systems, 0), active_columns=nr_equations),
+        SREF_H_latex=laTeX(SREF_H, leading_coefficient=(nr_systems, 0), active_columns=nr_equations),
+        O_latex=laTeX(O),
+        X_p_latex=laTeX(X_p),
+        is_solvable=is_solvable,
+        solution_set_latex=solution_set_latex)
+
+def solve_right_linear_system(A, B, ring):
+  
+  X_p, S, info = solve_left_linear_system(A.T, B.T, ring)
+  if info["is_solvable"]:
+    parametrized_solution_latex = ""
+    if info['nr_systems'] == 1:
+      if info["nr_syzygies"] != 0:
+        parametrized_solution_latex = " + " + laTeX(S.T)
+        parametrized_solution_latex += "\cdot"
+        parametrized_solution_latex += "\\begin{bmatrix}" + " \\\\ ".join([f"t_{ {i+1} }" for i in range(info["nr_syzygies"])]) + "\\end{bmatrix}"
+        parametrized_solution_latex += "|" + ",".join([f"t_{ {i+1} }" for i in range(info["nr_syzygies"])]) + "\in" + info["ring_latex"]
+    else:
+      if info["nr_syzygies"] != 0:
+        parametrized_solution_latex = " + " + laTeX(S.T)
+        parametrized_solution_latex += "\cdot"
+        parametrized_solution_latex += "\\begin{bmatrix}" + "\\\\".join([" & ".join(["t_{" + f"{j+1},{i+1}" + "}" for i in range(info["nr_systems"])]) for j in range(info["nr_syzygies"])]) + "\\end{bmatrix}"
+        parametrized_solution_latex += "| t_{i,j} \in" + info["ring_latex"] + "\mbox{ for }" + f"i \leq {info['nr_systems']}, j \leq {info['nr_syzygies']}"
+    
+    solution_set_latex = "\\{" + laTeX(X_p.T) + parametrized_solution_latex + "\\}"
+    solution_set_latex += "\\subseteq" + info["ring_latex"] + "^{" + str(info["nr_variables"]) + "\\times" + str(info["nr_systems"]) + "}"
+    return X_p.T, S.T, solution_set_latex
+  else:
+    return None, None, info["solution_set_latex"]
+
+def left_inverses(A, ring):
+  
+    B = eye_matrix(A.shape[1], ring, A.dtype)
+    
+    X_p, S, info = solve_left_linear_system(A, B, ring)
+    if info["is_solvable"]:
+      return X_p, S, info["solution_set_latex"]
+    else:
+      return None, None, info["solution_set_latex"]
+
+def right_inverses(A, ring):
+    
+    B = eye_matrix(A.shape[0], ring, A.dtype)
+    
+    return solve_right_linear_system(A, B, ring)
+  

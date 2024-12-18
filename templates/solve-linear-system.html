@@ -2,9 +2,6 @@
 {% block content %}
 <div class="container">
   <h1>Solving linear systems \(X\cdot A= B\)</h1>
-  <p class="text-muted small mb-0 ms-3">
-    Note that \(A\) and \(B\) must have the same number of columns.
-  </p>
   <form method="POST">
     {{ form.hidden_tag() }}
     
@@ -93,23 +90,21 @@
 </div>
 
 <div class="container">
+  
+  {% if error %}
+    <div class="alert alert-danger mt-4" role="alert">
+      {{ error }}
+    </div>
+  {% endif %}
+  
   {% if output %}
     
   <div class="container mt-4">
     <div class="card shadow-sm p-4">
       <h5 class="card-title mb-4">Solution Set:</h5>
       \[
-        \mathcal{L}_{ {{ ring_latex }} }^{A,B} =
-        {% if is_solvable %}
-          
-          \{ {{ X_p_latex }} {% if nr_syzygies != 0 %} + {{ parametrized_solution_latex }} {% endif %} \}
-          \subseteq {{ ring_latex }}^{ {{ nr_systems }} \times {{ nr_variables }} }
-          
-        {% else %}
-          
-          \emptyset
-          
-        {% endif %}
+          \mathcal{L}_{ {{ ring_latex }} }^{B;A} =
+          {{ solution_set_latex }}
       \]
       <div class="text-start">
         <button id="toggle-button" class="btn btn-secondary small-button" onclick="toggleComputation()">Show Computation</button>
@@ -154,7 +149,7 @@
         
         <li> The solution set to the homogeneous system \(X\cdot A=0\) is given by
           \[
-            \mathcal{L}_{ {{ ring_latex }} }^{A,0}
+            \mathcal{L}_{ {{ ring_latex }} }^{0;A}
             =
             \{ T \cdot S~|~T\in {{ ring_latex }} ^ { {{ nr_systems }} \times {{ nr_syzygies }}} \}
             =
@@ -163,7 +158,7 @@
         </li>
         
         <li>
-          The solution set \(\mathcal{L}_{ {{ ring_latex }} }^{A,B}\) to the system \(X \cdot A= B\) is given by \(X_p + \mathcal{L}_{ {{ ring_latex }} }^{A,0}\) where \(X_p\) is a particular solution to \(X\cdot A= B\).
+          The solution set \(\mathcal{L}_{ {{ ring_latex }} }^{B;A}\) to the system \(X \cdot A= B\) is given by \(X_p + \mathcal{L}_{ {{ ring_latex }} }^{0;A}\) where \(X_p\) is a particular solution to \(X\cdot A= B\).
         </li>
         
         <li>
@@ -187,7 +182,7 @@
         </li>
         
         <li>
-          The solution set is \( \mathcal{L}^{A,B}_{ {{ring_latex}} } = X_p + \mathcal{L}^{A,0}_{ {{ring_latex}} }\).
+          The solution set is \( \mathcal{L}^{B;A}_{ {{ring_latex}} } = X_p + \mathcal{L}^{0;A}_{ {{ring_latex}} }\).
           That is, the system has
             {% if nr_syzygies != 0 %}
                 {% if finite_ring %} exactly \({{ ring.mod }}^{{ nr_syzygies }}\) solutions {% else %} infinitely many solutions {% endif %}
