@@ -17,13 +17,15 @@ function parseMatrixEntriesFromString(M) {
     row.trim().split(" ")
   );
   
-  return M[0].map((_, colIndex) => M.map(row => row[colIndex]))
+  return M;
 }
 
 function transposeMContent(name) {
   var M = document.querySelector('[name="' + name + '"]').value;
   
   M = parseMatrixEntriesFromString(M);
+  
+  M = M[0].map((_, colIndex) => M.map(row => row[colIndex]))
   
   M = "[" + M.map(row => "[ " + row.join(", ") + " ]").join(",\n ") + "]";
   
