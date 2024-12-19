@@ -194,7 +194,7 @@ def solve_linear_system():
             )
     else:
       
-      solution_info = solve_left_linear_system(A, B, ring)
+      solution_info = solve_left_linear_system(A, B, ring, post_reduction="REF", active_columns=A.shape[1])
       
       return render_template('solve-linear-system.html',
               output=True,

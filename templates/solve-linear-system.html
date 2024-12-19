@@ -135,15 +135,15 @@
         <li> Define \( \begin{bmatrix} A & I \end{bmatrix} = {{ M_latex }} \)</li>
         
         <li>
-          We perform \(\mathbf{REF}\) algorithm on the first block of \(\begin{bmatrix} A & I \end{bmatrix}\):<br><br>
-         \( \mathbf{REF}(A | I) = {{ REF_M_latex }} \)
+          We perform \(\mathbf{ {{ post_reduction }} }\) algorithm on the first block of \(\begin{bmatrix} A & I \end{bmatrix}\):<br><br>
+         \( \mathbf{ {{ post_reduction }} }(A | I) = {{ xREF_M_latex }} \)
         </li>
         
         <li> We obtain the following matrices:
           <ul>
-            <li> \( G := G_{\mathbf{REF}}^{ {{ring_latex}} }(A) = {{ G_latex }} \in {{ ring_latex }}^{ {{ rank_A }} \times {{ nr_equations }} } \) </li>
-            <li> \( Z := Z_{\mathbf{REF}}^{ {{ring_latex}} }(A) = {{ Z_latex }} \in {{ ring_latex }}^{ {{ rank_A }} \times {{ nr_variables }} } \) (The \(\mathbf{REF}\)-B&eacute;zout matrix of \(A\))</li>
-            <li> \( S := S_{\mathbf{REF}}^{ {{ring_latex}} }(A) = {{ S_latex }} \in {{ ring_latex }}^{ {{ nr_syzygies }} \times {{ nr_variables }} } \) (The \(\mathbf{REF}\)-syzygy matrix  of \(A\) {% if nr_syzygies == 0 %} is empty {% endif %})</li>
+            <li> \( G := G_{\mathbf{ {{ post_reduction }} }}^{ {{ring_latex}} }(A) = {{ G_latex }} \in {{ ring_latex }}^{ {{ rank_A }} \times {{ nr_equations }} } \) </li>
+            <li> \( Z := Z_{\mathbf{ {{ post_reduction }} }}^{ {{ring_latex}} }(A) = {{ Z_latex }} \in {{ ring_latex }}^{ {{ rank_A }} \times {{ nr_variables }} } \) (The \(\mathbf{ {{ post_reduction }} }\)-B&eacute;zout matrix of \(A\))</li>
+            <li> \( S := S_{\mathbf{ {{ post_reduction }} }}^{ {{ring_latex}} }(A) = {{ S_latex }} \in {{ ring_latex }}^{ {{ nr_syzygies }} \times {{ nr_variables }} } \) (The \(\mathbf{ {{ post_reduction }} }\)-syzygy matrix  of \(A\) {% if nr_syzygies == 0 %} is empty {% endif %})</li>
           </ul>
         </li>
         

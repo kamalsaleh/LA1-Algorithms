@@ -410,7 +410,7 @@ def eye_matrix(n, ring, dtype):
     
     return mat
 
-def solve_left_linear_system(A, B, ring):
+def solve_left_linear_system(A, B, ring, post_reduction="REF", active_columns=None):
     
     nr_variables = A.shape[0]
     nr_equations = A.shape[1]
@@ -445,15 +445,15 @@ def solve_left_linear_system(A, B, ring):
     
     M = numpy.hstack([A, id_mat])
     
-    REF_M = echelon_form_matrix(M,
+    xREF_M = echelon_form_matrix(M,
                   leading_coefficient=(0, 0),
-                  post_reduction="REF",
-                  active_columns=nr_equations,
+                  post_reduction=post_reduction,
+                  active_columns=nr_equations if active_columns is None else active_columns,
                   ring=ring
               )[0]
     
-    A_tilde = REF_M[:, :nr_equations]
-    I_tilde = REF_M[:, nr_equations:]
+    A_tilde = xREF_M[:, :nr_equations]
+    I_tilde = xREF_M[:, nr_equations:]
     
     rank_A = len([i for i in range(nr_variables) if numpy.any(A_tilde[i,:] != 0)])
     
@@ -504,7 +504,8 @@ def solve_left_linear_system(A, B, ring):
         B_latex=laTeX(B),
         x_latex=x_latex,
         M_latex=laTeX(M, active_columns=nr_equations),
-        REF_M_latex=laTeX(REF_M, active_columns=nr_equations),
+        xREF_M_latex=laTeX(xREF_M, active_columns=nr_equations),
+        post_reduction=post_reduction,
         rank_A=rank_A,
         G_latex=laTeX(G),
         Z_latex=laTeX(Z),
@@ -522,9 +523,10 @@ def solve_left_linear_system(A, B, ring):
         is_solvable=is_solvable,
         solution_set_latex=solution_set_latex)
 
-def solve_right_linear_system(A, B, ring):
+def solve_right_linear_system(A, B, ring, post_reduction="REF", active_rows=None):
   
-  X_p, S, info = solve_left_linear_system(A.T, B.T, ring)
+  X_p, S, info = solve_left_linear_system(A.T, B.T, ring, post_reduction=post_reduction, active_columns=active_rows)
+  
   if info["is_solvable"]:
     parametrized_solution_latex = ""
     if info['nr_systems'] == 1:
@@ -550,7 +552,8 @@ def left_inverses(A, ring):
   
     B = eye_matrix(A.shape[1], ring, A.dtype)
     
-    X_p, S, info = solve_left_linear_system(A, B, ring)
+    X_p, S, info = solve_left_linear_system(A, B, ring, post_reduction="RREF", active_columns=-1)
+    
     if info["is_solvable"]:
       return X_p, S, info["solution_set_latex"]
     else:
@@ -560,5 +563,5 @@ def right_inverses(A, ring):
     
     B = eye_matrix(A.shape[0], ring, A.dtype)
     
-    return solve_right_linear_system(A, B, ring)
+    return solve_right_linear_system(A, B, ring, post_reduction="RREF", active_rows=-1)
   
