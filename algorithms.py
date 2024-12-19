@@ -538,7 +538,7 @@ def solve_right_linear_system(A, B, ring):
         parametrized_solution_latex = " + " + laTeX(S.T)
         parametrized_solution_latex += "\cdot"
         parametrized_solution_latex += "\\begin{bmatrix}" + "\\\\".join([" & ".join(["t_{" + f"{j+1},{i+1}" + "}" for i in range(info["nr_systems"])]) for j in range(info["nr_syzygies"])]) + "\\end{bmatrix}"
-        parametrized_solution_latex += "| t_{i,j} \in" + info["ring_latex"] + "\mbox{ for }" + f"i \leq {info['nr_systems']}, j \leq {info['nr_syzygies']}"
+        parametrized_solution_latex += "| t_{i,j} \in" + info["ring_latex"] + "\mbox{ for }" + f"i \leq {info['nr_syzygies']}, j \leq {info['nr_systems']}"
     
     solution_set_latex = "\\{" + laTeX(X_p.T) + parametrized_solution_latex + "\\}"
     solution_set_latex += "\\subseteq" + info["ring_latex"] + "^{" + str(info["nr_variables"]) + "\\times" + str(info["nr_systems"]) + "}"
