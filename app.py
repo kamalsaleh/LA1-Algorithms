@@ -123,10 +123,7 @@ def row_echelon_form():
                       post_reduction=post_reduction,
                       reduction_index=reduction_index)
         
-        if isinstance(ring, PolyRing):
-          output_as_text = str([[poly.expr for poly in row] for row in output[0].tolist()])
-        else:
-          output_as_text = str(output[0].tolist())
+        output_as_text = convert_matrix_to_string(output[0], ring)
         
         rank_M = len([i for i in range(M.shape[0]) if numpy.any(output[0][i,:] != 0)])
         
@@ -234,13 +231,26 @@ def compute_inverses():
         M = parse_matrix_from_string(form.M.data, ring)
         
         l_invs = left_inverses(M, ring)
+        
+        if l_invs[0] is not None:
+          l_invs_text = convert_matrix_to_string(numpy.vstack([l_invs[0], l_invs[1]]), ring)
+        else:
+          l_invs_text = "No left inverses found."
+        
         r_invs = right_inverses(M, ring)
+        
+        if r_invs[0] is not None:
+          r_invs_text = convert_matrix_to_string(numpy.hstack([r_invs[0], r_invs[1]]), ring)
+        else:
+          r_invs_text = "No right inverses found."
         
         return render_template('compute-inverses.html',
                     output=True,
                     form=form,
                     l_invs=l_invs[2],
-                    r_invs=r_invs[2]
+                    l_invs_text=l_invs_text,
+                    r_invs=r_invs[2],
+                    r_invs_text=r_invs_text
                   )
     else:
         return render_template('compute-inverses.html',

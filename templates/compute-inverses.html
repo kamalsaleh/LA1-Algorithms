@@ -78,6 +78,9 @@
           <div class="card shadow-sm p-4">
             <h5 class="card-title mb-4">Set of Left-Inverse(s):</h5>
             \[ {{ l_invs | safe }} \]
+            <div>
+              <button class="btn btn-secondary small-button" onclick="copyToClipboard('{{ l_invs_text }}')">Copy to Clipboard</button>
+            </div>
           </div>
         </div>
         
@@ -85,6 +88,9 @@
           <div class="card shadow-sm p-4">
             <h5 class="card-title mb-4">Set of Right-Inverse(s):</h5>
             \[ {{ r_invs | safe }} \]
+            <div>
+              <button class="btn btn-secondary small-button" onclick="copyToClipboard('{{ r_invs_text }}')">Copy to Clipboard</button>
+            </div>
           </div>
         </div>
         <br>

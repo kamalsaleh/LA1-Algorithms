@@ -36,6 +36,12 @@ def parse_matrix_from_string(M, ring):
     except Exception as e:
       raise ValueError(f"Error while parsing a matrix {repr(M)} over {repr(ring)}: {e}")
 
+def convert_matrix_to_string(M, ring):
+  if isinstance(ring, PolyRing):
+      return str([[poly.expr for poly in row] for row in M.tolist()])
+  else:
+      return str(M.tolist())
+  
 def laTeX(m, leading_coefficient=(0, 0), active_columns=-1):
   
   if isinstance(m, numpy.ndarray):
