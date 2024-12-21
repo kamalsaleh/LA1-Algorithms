@@ -20,6 +20,10 @@ function parseMatrixEntriesFromString(M) {
   return M;
 }
 
+function matrixToString(M) {
+  return "[" + M.map(row => "[ " + row.join(", ") + " ]").join(",\n ") + "]";
+}
+
 function transposeMContent(name) {
   var M = document.querySelector('[name="' + name + '"]').value;
   
@@ -27,13 +31,18 @@ function transposeMContent(name) {
   
   M = M[0].map((_, colIndex) => M.map(row => row[colIndex]))
   
-  M = "[" + M.map(row => "[ " + row.join(", ") + " ]").join(",\n ") + "]";
+  M = matrixToString(M);
   
   document.querySelector('[name="' + name + '"]').value = M;
 }
 
 function toggleChar() {
   var ring = document.getElementById("specify-ring");
+  
+  if (ring === null) {
+    return;
+  }
+  
   var field_of_polynomial_ring = document.getElementById("field-of-polynomial-ring");
   var domain = document.getElementById("specify-domain");
   var char = document.getElementById("specify-field-characteristic");
@@ -75,34 +84,17 @@ function toggleComputation() {
 }
 
 function generateIdentityMatrix(rank) {
-  var M = "";
+  var M = [];
   
   for (var i = 0; i < rank; i++) {
-    if (i > 0) {
-      M += " [ ";
-    } else {
-      M += "[ ";
-    }
+    M.push([]);
     for (var j = 0; j < rank; j++) {
       if (i === j) {
-        M += "1";
+        M[i].push("1");
       } else {
-        M += "0";
-      }
-      
-      if (j < rank - 1) {
-        M += ", ";
+        M[i].push("0");
       }
     }
-    M += " ]";
-    
-    if (i < rank - 1) {
-      M += ",\n";
-    }
-  }
-  
-  if (rank > 0) {
-    M = "[" + M + "]";
   }
   
   return M;
@@ -111,7 +103,7 @@ function generateIdentityMatrix(rank) {
 function stackIdentityMatrix(name) {
   var rank = parseInt(document.getElementById("identity-matrix-rank-" + name).value);
   
-  ID = parseMatrixEntriesFromString(generateIdentityMatrix(rank));
+  ID = generateIdentityMatrix(rank);
   M = document.querySelector('[name="' + name + '"]').value
   
   if (M.length > 0) {
@@ -125,13 +117,18 @@ function stackIdentityMatrix(name) {
       M = ID;
   }
   
-  M = M.map(row => row.join(" ")).join(";\n");
+  M = matrixToString(M);
   
   document.querySelector('[name="' + name + '"]').value = M;
 }
 
 function toggleReduceRows() {
   var art_of_reduction = document.getElementById("art-of-reduction");
+  
+  if (art_of_reduction === null) {
+    return;
+  }
+  
   var reduce_the_first_n_rows = document.getElementById("reduce-the-first-n-rows");
   
   if (art_of_reduction.value === "REF") {

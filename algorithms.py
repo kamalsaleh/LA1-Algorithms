@@ -488,9 +488,9 @@ def solve_left_linear_system(A, B, ring, post_reduction="REF", active_columns=No
     
     if is_solvable:
       if nr_syzygies == 0:
-        solution_set_latex = "\\{" + laTeX(X_p) + "\\}"
+        solution_set_latex = "\\left\\{" + laTeX(X_p) + "\\right\\}"
       else:
-        solution_set_latex = "\\{" + laTeX(X_p) + " + " + parametrized_solution_latex + "\\}"
+        solution_set_latex = "\\left\\{" + laTeX(X_p) + " + " + parametrized_solution_latex + "\\right\\}"
     else:
       solution_set_latex = "\\emptyset"
     
@@ -542,7 +542,7 @@ def solve_right_linear_system(A, B, ring, post_reduction="REF", active_rows=None
         parametrized_solution_latex += "\\begin{bmatrix}" + "\\\\".join([" & ".join(["t_{" + f"{j+1},{i+1}" + "}" for i in range(info["nr_systems"])]) for j in range(info["nr_syzygies"])]) + "\\end{bmatrix}"
         parametrized_solution_latex += "| t_{i,j} \in" + info["ring_latex"] + "\mbox{ for }" + f"i \leq {info['nr_syzygies']}, j \leq {info['nr_systems']}"
     
-    solution_set_latex = "\\{" + laTeX(X_p.T) + parametrized_solution_latex + "\\}"
+    solution_set_latex = "\\left\\{" + laTeX(X_p.T) + parametrized_solution_latex + "\\right\\}"
     solution_set_latex += "\\subseteq" + info["ring_latex"] + "^{" + str(info["nr_variables"]) + "\\times" + str(info["nr_systems"]) + "}"
     return X_p.T, S.T, solution_set_latex
   else:

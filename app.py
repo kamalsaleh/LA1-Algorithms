@@ -48,25 +48,34 @@ class LinearSystemForm(FlaskForm):
     
     A = TextAreaField("\(A=~\)", validators=[DataRequired()])
     B = TextAreaField("\(B=~\)", validators=[DataRequired()])
+    
     RING = SelectField(
-        'The linear system is defined over:',
+        'The matrices are defined over:',
         choices=[ ('Rationals', 'Rationals'),
               ('Integers', 'Integers'),
               ('FiniteField', 'Finite field'),
               ('PolynomialRing', 'Polynomial ring'),
               ],
         default='Rationals')
+    
     DOMAIN = SelectField(
         'The polynomial ring \(k[x]\) for \(k=\)',
         choices=[ ('Rationals', 'Rationals'),
               ('FiniteField', 'Finite field'),
               ],
         default='Rationals')
+    
     CHAR = IntegerField(
         "The finite field \(\mathbb{F}_{p}\) for the prime number \(p=\)",
         validators=[DataRequired()],
         default=2)
-    submit = SubmitField("Solve System")
+    
+    STRING_TO_EVALUATE = StringField(
+        "Evaluate:",
+        default="",
+        render_kw={"placeholder": "e.g., A + B"})
+    
+    submit = SubmitField("Submit")
     
 @app.route('/')
 def home():
@@ -78,6 +87,9 @@ def row_echelon_form():
     if form.validate_on_submit():
         leading_coefficient = form.LEADING_COEFFICIENT_POSITION.data
         leading_coefficient = tuple([int(i) - 1 for i in leading_coefficient.replace("(","").replace(")", "").replace(" ", "").split(",")])
+        
+        display_matrix_properties = leading_coefficient == (0, 0)
+        
         if any(i < 0 for i in leading_coefficient):
           raise ValueError("The starting leading coefficient position must consist of two positive integers")
         
@@ -148,11 +160,60 @@ def row_echelon_form():
                     post_reduction=post_reduction,
                     output=output,
                     output_as_text = output_as_text,
+                    display_matrix_properties=display_matrix_properties,
                     rank_M=rank_M,
                     nr_rows_M=M.shape[0],
                     nr_cols_M=M.shape[1])
     else:
         return render_template('row-echelon-form.html', form=form)
+
+@app.route('/matrix-arithmetic', methods=['GET', 'POST'])
+def matrix_arithmetic():
+  form = LinearSystemForm()
+  if form.validate_on_submit():
+    
+    ring_data = form.RING.data
+    
+    char = form.CHAR.data
+    
+    if ring_data == "Integers":
+      ring = ZZ
+    elif ring_data == "Rationals":
+      ring = QQ
+    elif ring_data == "FiniteField":
+      ring = GF(char)
+    elif ring_data == "PolynomialRing":
+      domain_data = form.DOMAIN.data
+      if domain_data == "Rationals":
+        ring, _ = sympy.ring("x", domain=QQ)
+      elif domain_data == "FiniteField":
+        ring, _ = sympy.ring("x", domain=GF(char))
+    else:
+      raise ValueError("The ring must be either 'Integers', 'Rationals', 'FiniteField' or 'PolynomialRing")
+    
+    A = parse_matrix_from_string(form.A.data, ring)
+    B = parse_matrix_from_string(form.B.data, ring)
+    
+    string_to_evaluate = form.STRING_TO_EVALUATE.data
+    string_to_evaluate.strip()
+      
+    try:
+      result = eval(string_to_evaluate)
+      return render_template('matrix-arithmetic.html',
+            form=form,
+            output=True,
+            output_text=convert_matrix_to_string(result, ring) if isinstance(result, numpy.ndarray) else str(result),
+            output_latex=laTeX(result)
+          )
+    except Exception as e:
+      return render_template('matrix-arithmetic.html',
+            form=form,
+            error=f"An error occurred: {e} while evaluating expression on matrices {A} and {B}."
+          )
+  
+  return render_template('matrix-arithmetic.html',
+          form=form
+        )
 
 @app.route('/solve-linear-system', methods=['GET', 'POST'])
 def solve_linear_system():
@@ -205,8 +266,8 @@ def solve_linear_system():
               form=form,
             )
 
-@app.route('/compute-inverses', methods=['GET', 'POST'])
-def compute_inverses():
+@app.route('/matrix-inversion', methods=['GET', 'POST'])
+def matrix_inversion():
     form = MatrixForm()
     if form.validate_on_submit():
         
@@ -244,7 +305,7 @@ def compute_inverses():
         else:
           r_invs_text = "No right inverses found."
         
-        return render_template('compute-inverses.html',
+        return render_template('matrix-inversion.html',
                     output=True,
                     form=form,
                     l_invs=l_invs[2],
@@ -253,7 +314,7 @@ def compute_inverses():
                     r_invs_text=r_invs_text
                   )
     else:
-        return render_template('compute-inverses.html',
+        return render_template('matrix-inversion.html',
                     output=False,
                     form=form)
 

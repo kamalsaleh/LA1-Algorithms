@@ -27,3 +27,28 @@ textarea {
   font-family: Arial, sans-serif;
   font-size: 14px;
 }
+
+table {
+  border-collapse: collapse;
+  margin: 20px auto;
+}
+table, th, td {
+  border: 0px solid black;
+}
+td {
+  padding: 5px;
+  border: none;
+}
+input[type="text"] {
+  width: 50px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+input[type="number"] {
+width: 50px;
+text-align: center;
+border: 1px solid #ccc;
+border-radius: 4px;
+}

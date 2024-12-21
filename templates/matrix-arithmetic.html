@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h1>Matrix Arithmetic</h1>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    
+    <div class="container mt-4">
+      <div class="card shadow-sm p-4">
+          <div class="form-group mb-3" style="display: flex; align-items: center;">
+            {{ form.A.label(class="form-label") }}
+            {{ form.A(id="form_A", class="form-control", value=form.A.data) }}
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <label class="form-label" for="identity-matrix-rank-A">Stack Identity-Mat:</label>
+              <input type="number" id="identity-matrix-rank-A" value="0" min="0" onchange="stackIdentityMatrix('A')">
+            </div>
+            <div class="d-flex">
+            &nbsp;
+            <button type="button" class="btn btn-secondary small-button" onclick="transposeMContent('A')">Transpose</button>
+            </div>
+          </div>
+          <br>
+          <br>
+          <p class="text-muted small mb-0 ms-3">
+            e.g., [[2, 5], [4, 5], [-3, 4]] or 2 5; 4 5; -3 4;<br>
+            e.g., [[2*x^3-3, x^2],[-x, 3*x+1]] or 2*x^3-3 x^2; -x 3*x+1; (no spaces within the polynomials)
+          </p>
+      </div>
+    </div>
+    <br>
+    <div class="container mt-4">
+      <div class="card shadow-sm p-4">
+          <div class="form-group mb-3" style="display: flex; align-items: center;">
+            {{ form.B.label(class="form-label") }}
+            {{ form.B(id="form_B", class="form-control", value=form.B.data) }}
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+            <label class="form-label" for="identity-matrix-rank-B">Stack Identity-Mat:</label>
+            <input type="number" id="identity-matrix-rank-B" value="0" min="0" onchange="stackIdentityMatrix('B')">
+            </div>
+            <div class="d-flex">
+            &nbsp;
+            <button type="button" class="btn btn-secondary small-button" onclick="transposeMContent('B')">Transpose</button>
+            </div>
+          </div>
+      </div>
+    </div>
+    <br>
+    
+    <div class="container mt-4">
+      <div class="card shadow-sm p-4">
+          <h5 class="card-title mb-4">Specify Ring:</h5>
+          <!-- RING and DOMAIN -->
+          <div style="display: flex; align-items: center;">
+              {{ form.RING.label }}
+              <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                {{ form.RING(class="form-control", id="specify-ring", onchange="toggleChar()") }}
+              </div>
+          </div>
+          
+          <div style="display: flex; align-items: center;" id="field-of-polynomial-ring">
+              <br>
+              {{ form.DOMAIN.label }}
+              <div style="width: fit-content; display: inline-block; margin-left: 10px;">
+                {{ form.DOMAIN(class="form-control", id="specify-domain", onchange="toggleChar()") }}
+              </div>
+          </div>
+          
+          <!-- Characteristic -->
+           <div class="form-group" id="specify-field-characteristic">
+              <br>
+              <div style="display: flex; align-items: center;">
+                {{ form.CHAR.label }}
+                {{ form.CHAR(id="char-input", min=2, onchange="nextPrime()") }}
+              </div>
+          </div>
+      </div>
+    </div>
+    
+    <br>
+      
+    <div class="container mt-4">
+      <div class="card shadow-sm p-4">
+        <h5 class="card-title mb-4">Arithmetic Expression:</h5>
+        <!-- String to evaluate -->
+        
+        <div class="form-group">
+          <div style="display: flex; align-items: center;">
+            {{ form.STRING_TO_EVALUATE.label() }}
+            {{ form.STRING_TO_EVALUATE(id="string-to-evaluate", class="form-control", value=form.STRING_TO_EVALUATE.data, style="flex: 1; margin-left: 10px; text-align: left;") }}
+          </div>
+          <p class="text-muted small mb-0 ms-3">
+            Use @ for matrix multiplication, e.g., A@B and use ** for matrix power, e.g., A**2
+          </p>
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="text-start">
+          <br>
+          {{ form.submit(class="btn btn-primary") }}
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<div class="container">
+  
+  {% if error %}
+    <div class="alert alert-danger mt-4" role="alert">
+      {{ error }}
+    </div>
+  {% endif %}
+  
+  {% if output %}
+    
+  <div class="container mt-4">
+    <div class="card shadow-sm p-4">
+      <h5 class="card-title mb-4">Output:</h5>
+      \[
+          {{ output_latex }}
+      \]
+      <div class="text-start">
+        <button type="button" class="btn btn-secondary small-button" onclick="copyToClipboard('{{ output_text }}')">Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+  
+  {% endif %}
+</div>
+<br>
+<br>
+{% endblock %}

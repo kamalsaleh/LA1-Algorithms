@@ -103,10 +103,10 @@
                     The default value is \(-1\) means each leading coefficient will be used to reduce elements in all rows above it.
                   </p>
                 </div>
-                <br>
                 
                 <!-- Submit Button -->
                 <div class="text-start">
+                  <br>
                   {{ form.submit(class="btn btn-primary") }}
                 </div>
             </div>
@@ -127,69 +127,70 @@
               \( \mathbf{ {{ post_reduction }} }(M) = {{ output[0] | safe }} \in {{ ring_latex }}^{ {{ nr_rows_M }} \times {{ nr_cols_M }} } \)
             </p>
             
-            <ul>
-              <li> \(\mathbf{Rank}(M) = {{ rank_M }}\)</li>
-              {% if rank_M == nr_rows_M %}
-                <li>
-                  \(M\) is left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrRows}(M)\).
-                </li>
-                {% if is_field %}
-                <li>
-                  \(M\) is right-invertible because it is left-regular and the underlying ring is a field.
-                </li>
-                {% endif %}
-              {% else %}
-                <li>
-                  \(M\) is not left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrRows}(M)\).
-                </li>
-                <li>
-                  \(M\) can't be right-invertible because it is not left-regular.
-                </li>
-              {% endif %}
-              
-              {% if rank_M == nr_cols_M %}
-                <li>
-                  \(M\) is right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrCols}(M)\).
-                </li>
-                
-                {% if is_field %}
-                <li>
-                  \(M\) is left-invertible because it is right-regular and the underlying ring is a field.
-                </li>
-                {% endif %}
-                
-              {% else %}
-                <li>
-                  \(M\) is not right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrCols}(M)\).
-                </li>
-                <li>
-                  \(M\) can't be left-invertible because it is not right-regular.
-                </li>
-              {% endif %}
-              
-              {% if is_field == False and left_invertible != 'unknown' %}
-                {% if left_invertible == True %}
-                  <li>
-                    \(M\) is left-invertible because the upper nonzero-part of \( \mathbf{ {{ post_reduction }} }(M) \) equals \(I_{ {{ nr_cols_M }} }\) .
-                  </li>
-                  {% if nr_rows_M == nr_cols_M %}
+            {% if display_matrix_properties %}
+                <ul>
+                  <li> \(\mathbf{Rank}(M) = {{ rank_M }}\)</li>
+                  {% if rank_M == nr_rows_M %}
                     <li>
-                      \(M\) is right-invertible because \(M\) is quadratic and left-invertible.
+                      \(M\) is left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrRows}(M)\).
+                    </li>
+                      {% if is_field %}
+                    <li>
+                      \(M\) is right-invertible because it is left-regular and the underlying ring is a field.
+                    </li>
+                      {% endif %}
+                  {% else %}
+                    <li>
+                      \(M\) is not left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrRows}(M)\).
+                    </li>
+                    <li>
+                      \(M\) can't be right-invertible because it is not left-regular.
                     </li>
                   {% endif %}
-                {% else %}
-                  <li>
-                    \(M\) is not left-invertible because the upper nonzero-part of \( \mathbf{ {{ post_reduction }} }(M) \) doesn't equal \(I_{ {{ nr_cols_M }} }\) .
-                  </li>
-                  {% if nr_rows_M == nr_cols_M %}
+                  
+                  {% if rank_M == nr_cols_M %}
                     <li>
-                      \(M\) is not right-invertible because \(M\) is quadratic and not left-invertible.
+                      \(M\) is right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrCols}(M)\).
+                    </li>
+                    
+                    {% if is_field %}
+                    <li>
+                      \(M\) is left-invertible because it is right-regular and the underlying ring is a field.
+                    </li>
+                    {% endif %}
+                    
+                  {% else %}
+                    <li>
+                      \(M\) is not right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrCols}(M)\).
+                    </li>
+                    <li>
+                      \(M\) can't be left-invertible because it is not right-regular.
                     </li>
                   {% endif %}
-                {% endif %}
-              {% endif %}
-              
-            </ul>
+                  
+                  {% if is_field == False and left_invertible != 'unknown' %}
+                    {% if left_invertible == True %}
+                      <li>
+                        \(M\) is left-invertible because the upper nonzero-part of \( \mathbf{ {{ post_reduction }} }(M) \) equals \(I_{ {{ nr_cols_M }} }\) .
+                      </li>
+                      {% if nr_rows_M == nr_cols_M %}
+                        <li>
+                          \(M\) is right-invertible because \(M\) is quadratic and left-invertible.
+                        </li>
+                      {% endif %}
+                    {% else %}
+                      <li>
+                        \(M\) is not left-invertible because the upper nonzero-part of \( \mathbf{ {{ post_reduction }} }(M) \) doesn't equal \(I_{ {{ nr_cols_M }} }\) .
+                      </li>
+                      {% if nr_rows_M == nr_cols_M %}
+                        <li>
+                          \(M\) is not right-invertible because \(M\) is quadratic and not left-invertible.
+                        </li>
+                      {% endif %}
+                    {% endif %}
+                  {% endif %}
+                </ul>
+            {% endif %}
             
             <div>
               <button class="btn btn-secondary small-button" onclick="copyToClipboard('{{ output_as_text }}')">Copy to Clipboard</button>
