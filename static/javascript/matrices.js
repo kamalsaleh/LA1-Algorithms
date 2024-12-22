@@ -44,6 +44,7 @@ function toggleChar() {
   }
   
   var field_of_polynomial_ring = document.getElementById("field-of-polynomial-ring");
+  var specify_solving_algorithm = document.getElementById("specify-solving-algorithm");
   var domain = document.getElementById("specify-domain");
   var char = document.getElementById("specify-field-characteristic");
   
@@ -51,12 +52,18 @@ function toggleChar() {
   if (ring.value === "Integers" || ring.value === "Rationals") {
     field_of_polynomial_ring.style.display = "none";
     char.style.display = "none";
+    if (ring.value === "Rationals") {
+      specify_solving_algorithm.style.display = "block";
+    } else {
+      specify_solving_algorithm.style.display = "none";
+    }
   }
   
   
   if (ring.value === "FiniteField") {
     field_of_polynomial_ring.style.display = "none";
     char.style.display = "block";
+    specify_solving_algorithm.style.display = "block";
   }
   
   if (ring.value === "PolynomialRing") {
@@ -67,6 +74,7 @@ function toggleChar() {
     } else {
       char.style.display = "none";
     }
+    specify_solving_algorithm.style.display = "none";
   }
 }
 

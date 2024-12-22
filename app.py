@@ -2,7 +2,7 @@ import numpy
 import sympy
 from flask import (Flask, redirect, render_template, request, url_for)
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, TextAreaField, StringField, IntegerField, SelectField
+from wtforms import SubmitField, TextAreaField, StringField, IntegerField, SelectField, BooleanField
 from wtforms.validators import DataRequired, ValidationError
 from algorithms import *
 
@@ -74,6 +74,8 @@ class LinearSystemForm(FlaskForm):
         "Evaluate:",
         default="",
         render_kw={"placeholder": "e.g., A + B"})
+    
+    SOLVING_ALGORITHM = BooleanField("Solve system by computing reduced column echelon form?", default=False)
     
     submit = SubmitField("Submit")
     
@@ -230,6 +232,11 @@ def solve_linear_system():
     
     char = form.CHAR.data if sympy.isprime(form.CHAR.data) else sympy.nextprime(form.CHAR.data)
     
+    use_gauss_on_columns = False
+    
+    if ring_data in ["Rationals", "FiniteField"]:
+      use_gauss_on_columns = form.SOLVING_ALGORITHM.data
+  
     if ring_data == "Integers":
       ring = ZZ
     elif ring_data == "Rationals":
@@ -255,14 +262,53 @@ def solve_linear_system():
             )
     else:
       
-      solution_info = solve_left_linear_system(A, B, ring, post_reduction="REF", active_columns=A.shape[1])
+      if use_gauss_on_columns:
+        solution_info = solve_left_linear_system_gauss_elimination(A, B, ring)
+      else:
+        solution_info = solve_left_linear_system(A, B, ring, post_reduction="REF", active_columns=A.shape[1])
       
       return render_template('solve-linear-system.html',
               output=True,
+              use_gauss_on_columns=use_gauss_on_columns,
               form=form,
               **solution_info[2])
   
   return render_template('solve-linear-system.html',
+              form=form,
+            )
+
+@app.route('/solve-linear-system-guass-elimination', methods=['GET', 'POST'])
+def solve_linear_system_guass_elimination():
+  
+  form = LinearSystemForm()
+  
+  if request.method == 'GET':
+    form.A.data = request.args.get('A', "")
+    form.B.data = request.args.get('B', "")
+  
+  if form.validate_on_submit():
+    
+    char = form.CHAR.data if sympy.isprime(form.CHAR.data) else sympy.nextprime(form.CHAR.data)
+    
+    domain_data = form.DOMAIN.data
+    if domain_data == "Rationals":
+      ring = QQ
+    elif domain_data == "FiniteField":
+      ring = GF(char)
+    
+    A = parse_matrix_from_string(form.A.data, ring)
+    B = parse_matrix_from_string(form.B.data, ring)
+    
+    solution_info = solve_left_linear_system_gauss_elimination(A, B, ring)
+    
+    return render_template('solve-linear-system-gauss-elimination.html',
+              output=True,
+              form=form,
+              **solution_info[2]
+            )
+    
+  
+  return render_template('solve-linear-system-gauss-elimination.html',
               form=form,
             )
 

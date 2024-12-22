@@ -1,0 +1,105 @@
+<p>
+  The passed matrices correspond to the following system of linear equations over \( {{ ring_latex }} \):
+</p>
+
+\[ {{ system_latex }} \]
+
+<ul>
+  <li>
+    The system can be expressed as \( X \cdot A = B \) where 
+    <ul>
+      <li> \( X = {{ x_latex }} \) </li>
+      <li> \( A = {{ A_latex }} \) </li>
+      <li> \( B = {{ B_latex }} \) </li>
+    </ul>
+  </li>
+  
+  <li> Define \( M := \begin{bmatrix} A \\ \hline B \end{bmatrix} = {{ M_latex }} \)</li>
+  
+  <li>
+    We perform \(\mathbf{RCEF}\) (reduced column echelon form) algorithm on the matrix \(M\): <br><br>
+    \[
+      \mathbf{ RCEF }(M) := (\mathbf{ {{ post_reduction }} }(M^{\mbox{tr}}))^{\mbox{tr}} = {{ RREF_M_latex }}
+    \]
+  </li>
+  <li>
+    We remove the zero columns and obtain the following matrix:
+    \[
+      {{ RREF_M_latex_ }}
+    \]
+  </li>
+  <li>
+      {% if rank_A == rank_M %}
+        Since \( \mathbf{Rank}(A) = {{ rank_M }} = \mathbf{Rank}(M) \) the system is solvable.
+      {% else %}
+        Since \( \mathbf{Rank}(A) = {{ rank_A }} \neq {{ rank_M }} = \mathbf{Rank}(M) \) the system is not solvable.
+      {% endif %}
+  </li>
+  
+  
+  {% if is_solvable %}
+      
+      <li>
+        {% if rank_A == nr_variables %}
+          Since \( \mathbf{Rank}(A) = {{ rank_A }} = \mathbf{NrRows}(A) \) the system has a unique solution.
+        {% else %}
+          Since \( \mathbf{Rank}(A) = {{ rank_A }} < {{ nr_variables }} = \mathbf{NrRows}(A) \) the system has multiple solutions.
+        {% endif %}
+      </li>
+      
+      {% if non_pivot_rows_A != "" %}
+        <li>
+          The leading coefficients are located at the rows with indices \( \{ {{ pivot_rows_A }} \} \).
+          For each missing row index \( 1 \leq i \leq \mathbf{NrRows}(A) = {{ nr_variables }}  \),
+          i.e., \( i \in \{ {{ non_pivot_rows_A }} \} \),
+          we insert a new \(i^{\mbox{th}}\)-column whose entry at position \((i, i)\) is \(-1_{ {{ ring_latex }} }={{ minus_one_latex }}\) and all other entries are zero.
+         \[ {{ eRREF_M_latex }} \]
+        </li>
+      {% endif %}
+      
+      <li>
+        We obtain the following matrices
+        <ul>
+          <li>
+            {% if nr_syzygies != 0 %}
+              The \(\mathbf{RCEF}\) rows-syzygy matrix \(S\) of \(A\) consists of the rows that contain new leading coefficients, i.e.,<br>
+            {% endif %}
+              \( S = {{ S_latex }} \in {{ ring_latex }}^{ {{ nr_syzygies }} \times {{ nr_variables }} } \)
+            {% if nr_syzygies == 0 %}
+              (The \(\mathbf{RCEF}\) rows-syzygy matrix \(S\) of \(A\))
+            {% endif %}
+          </li>
+          <li>
+            \( X_p = {{ X_p_latex }} \in {{ ring_latex }}^{ {{ nr_systems }} \times {{ nr_variables }} } \)
+            (A particular solution to the system)
+          </li>
+        </ul>
+      </li>
+      
+      <li>
+        The solution set of the homogeneous system \(X \cdot A = \mathbf{0}\) is given by
+        \[
+          \mathcal{L}_{ {{ ring_latex }} }^{\mathbf{0};A} =
+          \left\{ T \cdot S~|~T\in {{ ring_latex }} ^ { {{ nr_systems }} \times {{ nr_syzygies }}} \right\} =
+          \left\{ {{ parametrized_solution_latex }} \right\}
+        \]
+    </li>
+    <li>
+        The solution set is given by: 
+        \(
+          \mathcal{L}_{ {{ ring_latex }} }^{B;A} = X_p + \mathcal{L}_{ {{ ring_latex }} }^{\mathbf{0};A}.
+        \)
+        That is, the system has
+        {% if nr_syzygies != 0 %}
+            {% if finite_ring %} 
+              exactly \({{ ring.mod }}^{{ nr_syzygies * nr_systems }}\) solutions 
+            {% else %}
+              infinitely many solutions
+            {% endif %}
+        {% else %}
+          a unique solution \(X_p\)
+        {% endif %}
+        over \({{ ring_latex }}\).
+    </li>
+  {% endif %}
+</ul>

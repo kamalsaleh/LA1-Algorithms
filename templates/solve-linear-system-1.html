@@ -1,0 +1,86 @@
+<p>
+  The passed matrices correspond to the following system of linear equations over \( {{ ring_latex }} \):
+</p>
+
+\[ {{ system_latex }} \]
+
+<ul>
+  <li>
+    The system can be expressed as \( X \cdot A = B \) where 
+    <ul>
+      <li> \( X = {{ x_latex }} \) </li>
+      <li> \( A = {{ A_latex }} \) </li>
+      <li> \( B = {{ B_latex }} \) </li>
+    </ul>
+  </li>
+  
+  <li> Define \( \begin{bmatrix} A & I \end{bmatrix} = {{ M_latex }} \)</li>
+  
+  <li>
+    We perform \(\mathbf{ {{ post_reduction }} }\) algorithm on the first block of \(\begin{bmatrix} A & I \end{bmatrix}\):<br><br>
+    \(
+      \mathbf{ {{ post_reduction }} }(A | I) = {{ xREF_M_latex }} =: \left[\begin{array}{c|c} G & Z \\ \hline \mathbf{0} & S \end{array}\right]
+    \)
+  </li>
+  
+  <li> We obtain the following matrices:
+    <ul>
+      <li> \( G := {{ G_latex }} \in {{ ring_latex }}^{ {{ rank_A }} \times {{ nr_equations }} } \) (The nonzero-rows \(\mathbf{ {{ post_reduction }} }\)-matrix of \(A\)) </li>
+      <li> \( Z := {{ Z_latex }} \in {{ ring_latex }}^{ {{ rank_A }} \times {{ nr_variables }} } \) (The \(\mathbf{ {{ post_reduction }} }\)-B&eacute;zout matrix of \(A\))</li>
+      <li> \( S := {{ S_latex }} \in {{ ring_latex }}^{ {{ nr_syzygies }} \times {{ nr_variables }} } \) (The \(\mathbf{ {{ post_reduction }} }\) rows-syzygy matrix  of \(A\) {% if nr_syzygies == 0 %} is empty {% endif %})</li>
+    </ul>
+  </li>
+  
+  <li> The solution set to the homogeneous system \( X \cdot A = \mathbf{0} \) is given by
+    \[
+      \mathcal{L}_{ {{ ring_latex }} }^{\mathbf{0};A}
+      =
+      \left\{ T \cdot S~|~T\in {{ ring_latex }} ^ { {{ nr_systems }} \times {{ nr_syzygies }}} \right\}
+      =
+      \left\{ {% if nr_syzygies != 0 %} {{ parametrized_solution_latex }} {% else %} {{ zero_solution_latex }} {% endif %} \right\}.
+    \]
+  </li>
+  
+  <li>
+    The solution set \(\mathcal{L}_{ {{ ring_latex }} }^{B;A}\) to the system \(X \cdot A = B\) is given by \(X_p + \mathcal{L}_{ {{ ring_latex }} }^{\mathbf{0};A}\) where \(X_p\) is a particular solution to \(X\cdot A= B\).
+  </li>
+  
+  <li>
+   To find a particular solution \(X_p\) we use the leading coefficients in \(G\) to reduce the first {{ nr_systems }} row(s) of the matrix <br>
+    \( H := \left[\begin{array}{c|c} -B & 0 \\ \hline  G & Z \end{array}\right] = {{ H_latex }}. \) <br>
+    \( \leadsto \mathbf{sRED}(H) = {{ SREF_H_latex }} =: \left[\begin{array}{c|c} -\mathcal{O} & X_p \\ \hline  G & Z \end{array}\right] \)
+  </li>
+  
+  <li>
+    We obtain the following matrices:
+    <ul>
+      <li> \( \mathcal{O} = {{ O_latex }} \in {{ ring_latex }}^{ {{ nr_systems }} \times {{ nr_equations }} } \) (The obstruction matrix of the pair \((B, G)\)) </li>
+      <li> \( X_p = {{ X_p_latex }} \in {{ ring_latex }}^{ {{ nr_systems }} \times {{ nr_variables }} } \) </li>
+    </ul>
+  </li>
+  
+  {% if is_solvable == True %}
+  
+  <li>
+    Since \( \mathcal{O} \) is a zero matrix, the system is solvable over \({{ ring_latex }}\) and \( X_p := {{ X_p_latex }} \) is a particular solution to the system.
+  </li>
+  
+  <li>
+    The solution set is \( \mathcal{L}^{B;A}_{ {{ring_latex}} } = X_p + \mathcal{L}^{\mathbf{0};A}_{ {{ring_latex}} }\).
+    That is, the system has
+      {% if nr_syzygies != 0 %}
+          {% if finite_ring %} exactly \({{ ring.mod }}^{{ nr_syzygies * nr_systems }}\) solutions {% else %} infinitely many solutions {% endif %}
+      {% else %}
+        a unique solution \(X_p\)
+      {% endif %}
+    over \({{ ring_latex }}\).
+  </li>
+  
+  {% else %}
+  
+  <li>
+    Since \( \mathcal{O} \) is not a zero matrix, the system is not solvable over \({{ ring_latex }}\).
+  </li>
+  
+  {% endif %}
+</ul>

@@ -45,6 +45,10 @@ def convert_matrix_to_string(M, ring):
 def laTeX(m, leading_coefficient=(0, 0), active_columns=-1):
   
   if isinstance(m, numpy.ndarray):
+    
+    if m.shape[0] == 0 or m.shape[1] == 0:
+      return f"\\mathbf{0}_{{ {m.shape[0]} \\times {m.shape[1]} }}"
+    
     entries = m.tolist()
     rows = ["&".join([(laTeX(e) if e != 0 else "\cdot") for e in row]) for row in entries]
     if leading_coefficient[0] and leading_coefficient[0] < m.shape[0]:
@@ -418,10 +422,10 @@ def solve_left_linear_system(A, B, ring, post_reduction="REF", active_columns=No
     
     variables = [f"X_{ {i+1} }" for i in range(nr_variables)]
     
-    if nr_systems == 1 and ring in ["Integers", "Rationals"]:
+    if nr_systems == 1 and ring in [ZZ, QQ]:
       x_latex = "\\begin{bmatrix}" + " & ".join(variables) + "\\end{bmatrix}"
       system_latex = "\\begin{array}{r}" + "\\\\".join([a+b for a, b in zip([" & ".join([f"{'+' if val>=0 else '-'} {abs(val)}{var}" for val, var in zip(A[:,i], variables)]) for i in range(nr_equations)], [f"& = & {val}" for val in B[0,:]])]) + "\\end{array}"
-    elif nr_systems == 1 and ring not in ["Integers", "Rationals"]:
+    elif nr_systems == 1 and ring not in [ZZ, QQ]:
       x_latex = "\\begin{bmatrix}" + " & ".join(variables) + "\\end{bmatrix}"
       system_latex = "\\begin{array}{r}" + "\\\\".join([a+b for a, b in zip([" & ".join([f"+ ({laTeX(val)}){var}" for val, var in zip(A[:,i], variables)]) for i in range(nr_equations)], [f"& = & ({laTeX(val)})" for val in B[0,:]])]) + "\\end{array}"
     else:
@@ -548,6 +552,121 @@ def solve_right_linear_system(A, B, ring, post_reduction="REF", active_rows=None
   else:
     return None, None, info["solution_set_latex"]
 
+def solve_left_linear_system_gauss_elimination(A, B, ring):
+  
+  nr_variables = A.shape[0]
+  nr_equations = A.shape[1]
+  nr_systems = B.shape[0]
+  
+  if ring == QQ:
+    one = 1
+    finite_ring = False
+    ring_latex = " \mathbb{Z}" if ring == ZZ else " \mathbb{Q}"
+  elif isinstance(ring, GF):
+    one = ring(1)
+    finite_ring = True
+    ring_latex = f"\\mathbb{{F}}_{{ {ring.mod} }}"
+  
+  variables = [f"X_{ {i+1} }" for i in range(nr_variables)]
+  
+  if nr_systems == 1 and ring == QQ:
+    x_latex = "\\begin{bmatrix}" + " & ".join(variables) + "\\end{bmatrix}"
+    system_latex = "\\begin{array}{r}" + "\\\\".join([a+b for a, b in zip([" & ".join([f"{'+' if val>=0 else '-'} {abs(val)}{var}" for val, var in zip(A[:,i], variables)]) for i in range(nr_equations)], [f"& = & {val}" for val in B[0,:]])]) + "\\end{array}"
+  elif nr_systems == 1 and ring != QQ:
+    x_latex = "\\begin{bmatrix}" + " & ".join(variables) + "\\end{bmatrix}"
+    system_latex = "\\begin{array}{r}" + "\\\\".join([a+b for a, b in zip([" & ".join([f"+ ({laTeX(val)}){var}" for val, var in zip(A[:,i], variables)]) for i in range(nr_equations)], [f"& = & ({laTeX(val)})" for val in B[0,:]])]) + "\\end{array}"
+  else:
+    x_latex = "\\begin{bmatrix}" + "\\\\".join([" & ".join(["X_{" +f"{j+1},{i+1}" + "}" for i in range(nr_variables)]) for j in range(nr_systems)]) + "\\end{bmatrix}"
+    system_latex = "X \cdot A = B"
+  
+  M = numpy.vstack([A, B])
+  
+  RREF_M = (echelon_form_matrix(M.T,
+                leading_coefficient=(0, 0),
+                post_reduction="RREF",
+                active_columns=-1,
+                ring=ring
+              )[0]).T
+  
+  indices_A = [i for i in range(nr_equations) if numpy.any(RREF_M[:nr_variables, i] != 0)]
+  rank_A = len(indices_A)
+  
+  indices_M = [i for i in range(nr_equations) if numpy.any(RREF_M[:, i] != 0)]
+  rank_M = len(indices_M)
+  
+  is_solvable = rank_A == rank_M
+  
+  pivot_rows_A = set(next(j for j in range(nr_variables) if RREF_M[j,i] != 0) for i in range(rank_A))
+  non_pivot_rows_A = set(j for j in range(nr_variables) if j not in pivot_rows_A)
+  
+  eRREF_M = RREF_M[:,:rank_A].copy()
+  
+  if is_solvable:
+    for i in range(nr_variables):
+      if i not in pivot_rows_A:
+        eRREF_M = numpy.insert(eRREF_M, i, numpy.zeros(nr_variables + nr_systems, dtype=A.dtype), axis=1)
+        eRREF_M[i,i] = -one
+    
+    X_p = eRREF_M[nr_variables:, :]
+    
+    S = eRREF_M[list(non_pivot_rows_A),:]
+    
+    nr_syzygies = nr_variables - rank_A
+    
+    if nr_syzygies > 0:
+      if nr_systems == 1:
+        parametrized_solution_latex = "\\begin{bmatrix}" + " & ".join([f"t_{ {i+1} }" for i in range(nr_syzygies)]) + "\\end{bmatrix} \cdot" + laTeX(S) + "|" + ",".join([f"t_{ {i+1} }" for i in range(nr_syzygies)]) + "\in" + ring_latex
+      else:
+        parametrized_solution_latex = "\\begin{bmatrix}" + "\\\\".join([" & ".join(["t_{" +f"{j+1},{i+1}" + "}" for i in range(nr_syzygies)]) for j in range(nr_systems)]) + "\\end{bmatrix} \cdot" + laTeX(S) + "| t_{i,j} \in" + ring_latex + "\mbox{ for }" + f"i \leq {nr_systems}, j \leq {nr_syzygies}"
+    else:
+      parametrized_solution_latex = f"\\mathbf{{0}}_{{ {nr_systems} \\times {nr_variables} }}"
+    
+    solution_set_text = convert_matrix_to_string(numpy.vstack([X_p, S]), ring)
+    solution_set_latex = "\\left\\{" + laTeX(X_p) + (("+" + parametrized_solution_latex) if nr_syzygies else "") + "\\right\\}"
+    solution_set_latex += "\\subseteq" + ring_latex + "^{" + f"{nr_systems}" + "\\times" + f"{nr_variables}" + "}"
+  
+  else:
+    X_p = None
+    S = None
+    nr_syzygies = None
+    solution_set_text = "[]"
+    solution_set_latex = "\\emptyset"
+    parametrized_solution_latex = f"\\mathbf{{0}}_{{ {nr_systems} \\times {nr_variables} }}"
+    
+  return X_p, S, dict(
+    x_latex=x_latex,
+    system_latex=system_latex,
+    finite_ring=finite_ring,
+    ring=ring,
+    ring_latex=ring_latex,
+    A_latex=laTeX(A),
+    B_latex=laTeX(B),
+    M_latex=laTeX(M, leading_coefficient=(nr_variables, 0)),
+    S_latex=laTeX(S),
+    X_p_latex=laTeX(X_p),
+    solution_set_latex=solution_set_latex,
+    solution_set_text=solution_set_text,
+    pivot_rows_A={i + 1 for i in pivot_rows_A} if len(pivot_rows_A) > 0 else "",
+    non_pivot_rows_A={i + 1 for i in non_pivot_rows_A} if len(non_pivot_rows_A) > 0 else "",
+    post_reduction="RREF",
+    RREF_M_latex=laTeX(RREF_M, leading_coefficient=(nr_variables, 0)),
+    RREF_M_latex_=laTeX(RREF_M[:,:rank_M], leading_coefficient=(nr_variables, 0)),
+    eRREF_M_latex=laTeX(eRREF_M, leading_coefficient=(nr_variables, 0)),
+    minus_one_latex=laTeX(-one),
+    rank_A=rank_A,
+    rank_M=rank_M,
+    is_solvable=is_solvable,
+    parametrized_solution_latex=parametrized_solution_latex,
+    nr_variables=nr_variables,
+    nr_systems=nr_systems,
+    nr_syzygies=nr_syzygies,
+    indices_A=indices_A,
+    indices_M=indices_M
+  )
+  
+  
+  
+  
 def left_inverses(A, ring):
   
     B = eye_matrix(A.shape[1], ring, A.dtype)

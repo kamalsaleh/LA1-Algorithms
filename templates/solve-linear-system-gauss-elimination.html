@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container">
-  <h1>Solving linear systems \(X\cdot A= B\)</h1>
+  <h1>Solving linear systems \(X \cdot A = B\)</h1>
   <form method="POST">
     {{ form.hidden_tag() }}
     
@@ -50,20 +50,16 @@
     </div>
     <br>
     
+    <input type="hidden" id="specify-ring" value="PolynomialRing">
+    
     <div class="container mt-4">
       <div class="card shadow-sm p-4">
         <h5 class="card-title mb-4">Specify Ring:</h5>
           <!-- RING and DOMAIN -->
-          <div style="display: flex; align-items: center;">
-              {{ form.RING.label }}
-              <div style="width: fit-content; display: inline-block; margin-left: 10px;">
-                {{ form.RING(class="form-control", id="specify-ring", onchange="toggleChar()") }}
-              </div>
-          </div>
           
           <div style="display: flex; align-items: center;" id="field-of-polynomial-ring">
               <br>
-              {{ form.DOMAIN.label }}
+              {{ form.RING.label }}
               <div style="width: fit-content; display: inline-block; margin-left: 10px;">
                 {{ form.DOMAIN(class="form-control", id="specify-domain", onchange="toggleChar()") }}
               </div>
@@ -78,19 +74,8 @@
             </div>
           </div>
           
-          <!-- Solving Algorithm -->
-          <div class="form-group" id="specify-solving-algorithm">
-            <br>
-            <div class="field-container" style="display: flex; align-items: center;">
-              {{ form.SOLVING_ALGORITHM.label }}
-              <div style="width: fit-content; display: inline-block; margin-left: 10px;">
-              {{ form.SOLVING_ALGORITHM(id="specify-solving-algorithm") }}
-              </div>
-            </div>
-          </div>
-          
           <!-- Submit Button -->
-          <div class="form-group mt-4">
+          <div class="text-start">
             <br>
             {{ form.submit(class="btn btn-primary") }}
           </div>
@@ -119,6 +104,7 @@
       \]
       <div class="text-start">
         <button id="toggle-button" class="btn btn-secondary small-button" onclick="toggleComputation()">Show Computation</button>
+        <button class="btn btn-secondary small-button" onclick="copyToClipboard('{{ solution_set_text }}')">Copy to Clipboard</button>
       </div>
     </div>
   </div>
@@ -126,17 +112,12 @@
   <div class="container mt-4" id="computation-details" style="display: none;">
     <div class="card shadow-sm p-4">
       <h5 class="card-title mb-4">Computation Details:</h5>
-      {% if use_gauss_on_columns != True %}
-        {% include 'solve-linear-system-1.html' %}
-      {% else %}
-        {% include 'solve-linear-system-2.html' %}
-      {% endif %}
       
+
     </div>
   </div>
   {% endif %}
 </div>
-
 <br>
 <br>
 {% endblock %}
