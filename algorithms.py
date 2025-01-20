@@ -500,6 +500,8 @@ def solve_left_linear_system(A, B, ring, post_reduction="REF", active_columns=No
     
     solution_set_latex = solution_set_latex + "\\subseteq" + ring_latex + "^{" + str(nr_systems) + "\\times" + str(nr_variables) + "}"
     
+    solution_set_text = convert_matrix_to_string(numpy.vstack([X_p, S]), ring)
+    
     return X_p, S, dict(ring=ring,
         finite_ring=finite_ring,
         ring_latex=ring_latex,
@@ -525,7 +527,8 @@ def solve_left_linear_system(A, B, ring, post_reduction="REF", active_columns=No
         O_latex=laTeX(O),
         X_p_latex=laTeX(X_p),
         is_solvable=is_solvable,
-        solution_set_latex=solution_set_latex)
+        solution_set_latex=solution_set_latex,
+        solution_set_text=solution_set_text)
 
 def solve_right_linear_system(A, B, ring, post_reduction="REF", active_rows=None):
   
