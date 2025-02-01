@@ -132,39 +132,39 @@
                   <li> \(\mathbf{Rank}(M) = {{ rank_M }}\)</li>
                   {% if rank_M == nr_rows_M %}
                     <li>
-                      \(M\) is left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrRows}(M)\).
+                      \(M\) is right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrRows}(M)\).
                     </li>
                       {% if is_field %}
                     <li>
-                      \(M\) is right-invertible because it is left-regular and the underlying ring is a field.
+                      \(M\) is right-invertible because it is right-regular and the underlying ring is a field.
                     </li>
                       {% endif %}
                   {% else %}
                     <li>
-                      \(M\) is not left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrRows}(M)\).
+                      \(M\) is not right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrRows}(M)\).
                     </li>
                     <li>
-                      \(M\) can't be right-invertible because it is not left-regular.
+                      \(M\) can't be right-invertible because it is not right-regular.
                     </li>
                   {% endif %}
                   
                   {% if rank_M == nr_cols_M %}
                     <li>
-                      \(M\) is right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrCols}(M)\).
+                      \(M\) is left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} = \mathbf{NrCols}(M)\).
                     </li>
                     
                     {% if is_field %}
                     <li>
-                      \(M\) is left-invertible because it is right-regular and the underlying ring is a field.
+                      \(M\) is left-invertible because it is left-regular and the underlying ring is a field.
                     </li>
                     {% endif %}
                     
                   {% else %}
                     <li>
-                      \(M\) is not right-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrCols}(M)\).
+                      \(M\) is not left-regular because \(\mathbf{Rank}(M) = {{ rank_M }} \neq \mathbf{NrCols}(M)\).
                     </li>
                     <li>
-                      \(M\) can't be left-invertible because it is not right-regular.
+                      \(M\) can't be left-invertible because it is not left-regular.
                     </li>
                   {% endif %}
                   
