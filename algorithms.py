@@ -253,7 +253,7 @@ def bezout_matrix(a, b, ring):
         html += "<li>" + latex_mul_operator(val, val_inv, 0, comment=f"We normalize the first row;") + "\( \leadsto" + laTeX(M, active_columns=1) + "\) </li>"
     
     html += "<li>Bézout matrix is \(\mathcal{U}\,:=\)" + f"\({laTeX(M[:, 1:])}\)</li>"
-    html += f"<li>We can verify \(g:=\mathrm{{gcd}}(a,b)={laTeX(M[0,0])}=({laTeX(M[0,1])})\cdot a+({laTeX(M[0,2])})\cdot b\) and \({laTeX(M[1:,1:])}" + "= \\frac{1}{g}\cdot \\begin{bmatrix} b & -a \\end{bmatrix}\)</li>"
+    html += f"<li>We can verify \(g:=\mathrm{{gcd}}(a,b)={laTeX(M[0,0])}=({laTeX(M[0,1])})\cdot a+({laTeX(M[0,2])})\cdot b\) and \({laTeX(M[1:,1:])} \cdot \\begin{{bmatrix}} a \\\\ b \\end{{bmatrix}}=0\)</li>"
     html += "</ul>"
     
     assert a % M[0, 0] == 0 == b % M[0, 0]
